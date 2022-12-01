@@ -101,6 +101,7 @@ describe("swap", () => {
       );
       return btn;
     });
+    await pause(0.5)
     const approveERC20Spend = await getByText(docElement, /Approve/i);
     await approveERC20Spend.press("Enter");
     await metamask.confirmTransaction();

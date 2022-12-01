@@ -127,7 +127,6 @@ async function checkAllowance({
   contractAddress?: string;
 }) {
   if (contractAddress && state.account) {
-    console.log(`checking allowance for ${state.sellToken}`);
     const erc20 = new Contract(contractAddress, erc20ABI, signer);
     const allowance = await erc20.allowance(state.account, ZERO_EX_PROXY);
 
@@ -343,6 +342,7 @@ export async function onFetchQuote({
     if ("msg" in dataOrError) {
       dispatch({ type: "error", payload: dataOrError });
     } else {
+      dispatch({ type: "set price", payload: undefined });
       dispatch({ type: "set quote", payload: data as Quote });
       dispatch({ type: "set finalize order" });
     }
