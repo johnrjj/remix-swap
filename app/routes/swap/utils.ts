@@ -38,7 +38,7 @@ export async function fetchQuote(
   validateRequestParams(params);
 
   const response = await fetch(
-    `${endpoint}/swap/v1/quote?${qs.stringify(params)}`
+    `${endpoint}/swap/v1/price?${qs.stringify(params)}`
   );
   const data = await response.json();
 

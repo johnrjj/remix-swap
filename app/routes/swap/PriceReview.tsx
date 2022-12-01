@@ -206,7 +206,7 @@ export function PriceReview({
           value={state.buyToken}
           className={clsx(selectStyles, "mr-2", "w-50", "sm:w-full", "h-9")}
           onChange={(e) => {
-            onBuyTokenSelect(e, state, dispatch);
+            onBuyTokenSelect(e, state, dispatch, signer as Signer);
             if (e.target.value === state.sellToken) {
               setSearchParams({
                 ...Object.fromEntries(searchParams),

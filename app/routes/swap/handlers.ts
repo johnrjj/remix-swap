@@ -27,7 +27,7 @@ export async function onSellTokenSelect(
   dispatch: Dispatch<ActionTypes>
 ) {
   dispatch({ type: "choose sell token", payload: e.target.value });
-  
+
   if (state.sellAmount === "") return;
   if (e.target.value === state.buyToken) {
     const params = {
@@ -52,7 +52,6 @@ export async function onSellTokenSelect(
     } else {
       dispatch({ type: "set quote", payload: dataOrError as Quote });
     }
-    
   } else {
     const params = {
       sellToken: e.target.value,
@@ -77,41 +76,31 @@ export async function onSellTokenSelect(
 export async function onBuyTokenSelect(
   e: ChangeEvent<HTMLSelectElement>,
   state: IReducerState,
-  dispatch: Dispatch<ActionTypes>
+  dispatch: Dispatch<ActionTypes>,
+  signer: Signer,
 ) {
   dispatch({ type: "choose buy token", payload: e.target.value });
   if (state.buyAmount === "") return;
   if (e.target.value === state.sellToken) {
-    const params = {
-      buyToken: e.target.value,
-      sellToken: state.buyToken,
-      sellAmount: parseUnits(
-        state.buyAmount || "",
-        TOKENS[state.buyToken].decimal
-      ).toString(),
-      takerAddress: getTakerAddress(state),
-    };
-    dispatch({ type: "fetching quote", payload: true });
-    dispatch({ type: "set sell amount", payload: state.buyAmount });
-    dispatch({ type: "set buy amount", payload: "" });
-    dispatch({ type: "set direction", payload: "sell" });
-    const data = await fetchQuote(ENDPOINTS[CHAIN_IDS[state.network]], params);
-    const dataOrError = validateResponseData<Quote>(data);
-    dispatch({ type: "set quote", payload: dataOrError as Quote });
+    if (state.buyAmount || state.sellAmount) {
+      onDirectionChange(state, dispatch, signer);
+    }
   } else {
     const params = {
       sellToken: state.sellToken,
       buyToken: e.target.value,
-      buyAmount: parseUnits(
-        state.buyAmount || "0",
-        TOKENS[e.target.value].decimal
+      sellAmount: parseUnits(
+        state.sellAmount || "0",
+        TOKENS[state.sellToken].decimal
       ).toString(),
       takerAddress: getTakerAddress(state),
     };
-    dispatch({ type: "fetching quote", payload: true });
+    dispatch({ type: "fetching price", payload: true });
     const data = await fetchQuote(ENDPOINTS[CHAIN_IDS[state.network]], params);
-    const dataOrError = validateResponseData<Quote>(data);
-    dispatch({ type: "set quote", payload: dataOrError as Quote });
+    const dataOrError = validateResponseData<Price>(data);
+    if ("buyAmount" in dataOrError) {
+      dispatch({ type: "set price", payload: dataOrError as Price });
+    }
   }
 }
 
@@ -333,10 +322,7 @@ export async function onFetchQuote({
         takerAddress,
       };
     }
-    const data = await fetchQuote(
-      ENDPOINTS[CHAIN_IDS[state.network]],
-      params
-    );
+    const data = await fetchQuote(ENDPOINTS[CHAIN_IDS[state.network]], params);
     const dataOrError = validateResponseData(data);
 
     if ("msg" in dataOrError) {
